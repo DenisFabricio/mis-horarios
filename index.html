@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mis Horarios 2.0</title>
+  <meta name="theme-color" content="#0b2a5b" />
+
+  <style>
+    :root{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --bg:#f5f7fb; --card:#ffffff; --text:#111;
+      --muted: rgba(0,0,0,.7);
+      --border:#e6e9f2;
+      --shadow: 0 6px 18px rgba(0,0,0,.08);
+      --primary:#0b2a5b;
+      --chip:#eef3ff; --chip-border:#b7c7ff;
+      --ok-bg:#e8fff3; --ok-border:#a7e6c7;
+      --warn-bg:#fff3e6; --warn-border:#ffd4a8;
+      --vio-bg:#f2e8ff; --vio-border:#d3b7ff;
+      --gray-bg:#f3f4f6; --gray-border:#e5e7eb;
+      --now:#dff6ff; --now-border:#7bd3ff;
+      --next:#fff7db; --next-border:#ffd36a;
+      --danger:#b42318;
+    }
+    body.dark{
+      --bg:#0c1220; --card:#111a2e; --text:#eef2ff;
+      --muted: rgba(238,242,255,.78);
+      --border:#24304a;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
+      --chip:#172443; --chip-border:#2b3b66;
+      --ok-bg:#0f2b1f; --ok-border:#1f6b4a;
+      --warn-bg:#2b1f0f; --warn-border:#8a5b1e;
+      --vio-bg:#24143a; --vio-border:#6c3bb7;
+      --gray-bg:#1a2236; --gray-border:#2a3550;
+      --now:#103044; --now-border:#2fb4ff;
+      --next:#3a2f10; --next-border:#ffcc4d;
+    }
+    body{ margin:0; background:var(--bg); color:var(--text); }
+    header{ background:var(--primary); color:#fff; padding:16px; }
+    header h1{ margin:0; font-size:20px; }
+    main{ padding:14px; max-width:900px; margin:0 auto; }
+    .card{ background:var(--card); border-radius:16px; padding:12px; box-shadow:var(--shadow); }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    select, button, input{
+      font-size:16px; padding:10px 12px; border-radius:12px;
+      border:1px solid #d0d6e2; background:var(--card); color:var(--text);
+      border-color: var(--border);
+    }
+    button{ cursor:pointer; }
+    .hint{ font-size:13px; color:var(--muted); margin-top:8px; }
+    .tabs{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .tab{
+      border:1px solid var(--border); background:var(--card);
+      padding:8px 10px; border-radius:999px; font-size:14px;
+    }
+    .tab.active{ background:var(--chip); border-color:var(--chip-border); }
+    ul{ list-style:none; padding:0; margin:12px 0 0; }
+    li{
+      border:1px solid var(--border); border-radius:14px; padding:10px 12px;
+      margin-bottom:10px; background:var(--card);
+    }
+    .topline{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .hora{ font-weight:900; }
+    .sub{ margin-top:6px; font-size:14px; color:var(--muted); }
+    .empty{
+      padding:12px; border-radius:12px; background:var(--chip);
+      border:1px dashed var(--chip-border); margin-top:12px;
+    }
+    .dayTitle{ margin:18px 0 8px; font-weight:900; font-size:16px; }
+    .badge{
+      font-size:12px; padding:4px 10px; border-radius:999px;
+      border:1px solid var(--border); white-space:nowrap; font-weight:800;
+    }
+    .b2{ background:var(--ok-bg); border-color:var(--ok-border); }
+    .b4{ background:var(--chip); border-color:var(--chip-border); }
+    .b6{ background:var(--warn-bg); border-color:var(--warn-border); }
+    .bcoord{ background:var(--vio-bg); border-color:var(--vio-border); }
+    .bnone{ background:var(--gray-bg); border-color:var(--gray-border); }
+
+    .flag{
+      font-size:12px; padding:4px 10px; border-radius:999px; font-weight:900;
+      border:1px solid transparent; margin-left:8px;
+    }
+    .now{ background:var(--now); border-color:var(--now-border); }
+    .next{ background:var(--next); border-color:var(--next-border); }
+
+    .noteBox{
+      margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .noteBox input{ flex: 1 1 240px; }
+    .noteBtn{ padding:10px 12px; border-radius:12px; border:1px solid var(--border); }
+    .noteText{ margin-top:6px; font-size:13px; color:var(--muted); }
+    .danger{ color: var(--danger); font-weight:800; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Mis horarios 2.0</h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="row">
+        <label for="dia"><strong>Día:</strong></label>
+        <select id="dia">
+          <option>Lunes</option>
+          <option>Martes</option>
+          <option>Miércoles</option>
+          <option>Jueves</option>
+          <option>Viernes</option>
+        </select>
+
+        <button id="btnHoy" type="button">Ir a hoy</button>
+        <button id="btnPendientes" type="button">Solo pendientes</button>
+        <button id="btnOscuro" type="button">Modo oscuro</button>
+        <button id="btnNotif" type="button">Permitir avisos</button>
+      </div>
+
+      <div class="tabs">
+        <button id="tabDia" class="tab active" type="button">Vista por día</button>
+        <button id="tabSemana" class="tab" type="button">Semana completa</button>
+      </div>
+
+      <div class="hint">
+        ✅ Resalta clase actual y próxima. ✅ Notifica “en 10 min” <span class="danger">solo si la app está abierta</span>.
+        Para avisos confiables (aunque esté cerrada) conviene publicarla en HTTPS.
+      </div>
+
+      <div id="status" class="hint"></div>
+
+      <!-- Vista por día -->
+      <div id="viewDia">
+        <ul id="listaDia"></ul>
+        <div id="vacioDia" class="empty" style="display:none;">Sin clases</div>
+      </div>
+
+      <!-- Vista semana -->
+      <div id="viewSemana" style="display:none;">
+        <div id="semana"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  // ====== DATOS ======
+  const HORARIOS = {
+    "Lunes": [],
+    "Martes": [
+      { hora: "7:20–8:00", grupo: "9°1", lugar: "Liceo N°4" },
+      { hora: "8:00–8:40", grupo: "9°1", lugar: "Liceo N°4" },
+      { hora: "8:45–9:30", grupo: "8°2", lugar: "Liceo N°4" },
+      { hora: "10:25–11:05", grupo: "7°1", lugar: "Liceo N°2" },
+      { hora: "11:10–11:50", grupo: "7°1", lugar: "Liceo N°2" },
+      { hora: "11:50–12:30", grupo: "7°1", lugar: "Liceo N°2" },
+    ],
+    "Miércoles": [
+      { hora: "7:30–8:10", grupo: "7°5", lugar: "Liceo N°2" },
+      { hora: "8:10–8:50", grupo: "7°5", lugar: "Liceo N°2" },
+      { hora: "9:35–10:15", grupo: "8°1", lugar: "Liceo N°4" },
+      { hora: "10:15–10:55", grupo: "8°1", lugar: "Liceo N°4" },
+      { hora: "11:40–12:20", grupo: "9°2", lugar: "Liceo N°4" },
+      { hora: "12:25–13:05", grupo: "9°2", lugar: "Liceo N°4" },
+    ],
+    "Jueves": [
+      { hora: "7:30–8:10", grupo: "7°4", lugar: "Liceo N°2" },
+      { hora: "8:10–8:50", grupo: "7°4", lugar: "Liceo N°2" },
+      { hora: "8:55–9:40", grupo: "7°4", lugar: "Liceo N°2" },
+      { hora: "9:45–10:25", grupo: "7°5", lugar: "Liceo N°2" },
+      { hora: "15:00–18:00", grupo: "COORD", lugar: "" },
+    ],
+    "Viernes": [
+      { hora: "7:20–8:00", grupo: "9°1", lugar: "Liceo N°4" },
+      { hora: "10:55–11:40", grupo: "9°1", lugar: "Liceo N°6" },
+      { hora: "11:40–12:25", grupo: "9°1", lugar: "Liceo N°6" },
+      { hora: "13:00–14:30", grupo: "9°1", lugar: "Liceo N°6" },
+    ],
+  };
+  const ORDEN_DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+
+  // ====== Estado ======
+  let soloPendientes = false;
+  let notifTimers = [];
+  const status = document.getElementById("status");
+
+  // ====== Helpers tiempo ======
+  function minutos(hhmm){
+    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+    if(!m) return null;
+    return parseInt(m[1],10)*60 + parseInt(m[2],10);
+  }
+  function parseRango(rango){
+    // "7:20–8:00"
+    if(!rango) return null;
+    const parts = rango.split("–").map(s=>s.trim());
+    if(parts.length<2) return null;
+    const ini = minutos(parts[0]);
+    const fin = minutos(parts[1]);
+    if(ini===null || fin===null) return null;
+    return {ini, fin};
+  }
+  function ahoraMin(){
+    const d = new Date();
+    return d.getHours()*60 + d.getMinutes();
+  }
+  function ordenar(items){
+    return [...items].sort((a,b)=>{
+      const ra = parseRango(a.hora); const rb = parseRango(b.hora);
+      return (ra?.ini ?? 9999) - (rb?.ini ?? 9999);
+    });
+  }
+  function hoyNombre(){
+    const map = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+    return map[new Date().getDay()];
+  }
+
+  // ====== Colores ======
+  function badgeClass(lugar, grupo){
+    if(grupo==="COORD") return "badge bcoord";
+    if(!lugar) return "badge bnone";
+    if(lugar.includes("N°2")) return "badge b2";
+    if(lugar.includes("N°4")) return "badge b4";
+    if(lugar.includes("N°6")) return "badge b6";
+    return "badge bnone";
+  }
+
+  // ====== Notas (localStorage) ======
+  // key estable por clase: Dia|hora|grupo|lugar
+  function classKey(dia,it){
+    return `${dia}|${it.hora}|${it.grupo}|${it.lugar||""}`;
+  }
+  function getNote(key){
+    return localStorage.getItem("note:"+key) || "";
+  }
+  function setNote(key,val){
+    localStorage.setItem("note:"+key, val);
+  }
+  function clearNote(key){
+    localStorage.removeItem("note:"+key);
+  }
+
+  // ====== Notificaciones (solo mientras está abierto) ======
+  function clearNotifTimers(){
+    for(const t of notifTimers) clearTimeout(t);
+    notifTimers = [];
+  }
+  function canNotify(){
+    return ("Notification" in window);
+  }
+  async function requestNotify(){
+    if(!canNotify()) { alert("Tu navegador no soporta notificaciones."); return; }
+    const perm = await Notification.requestPermission();
+    status.textContent = `Avisos: ${perm}`;
+  }
+  function scheduleNotificationsForDay(dia){
+    clearNotifTimers();
+    if(!canNotify() || Notification.permission!=="granted") return;
+
+    const now = new Date();
+    const items = ordenar(HORARIOS[dia] ?? []);
+    const nowMin = ahoraMin();
+
+    for(const it of items){
+      const r = parseRango(it.hora);
+      if(!r) continue;
+      // avisar 10 min antes de iniciar
+      const avisarEn = r.ini - 10;
+      if(avisarEn < nowMin) continue;
+
+      const ms = (avisarEn - nowMin) * 60 * 1000;
+      const titulo = "En 10 minutos";
+      const cuerpo = `${it.grupo} ${it.lugar ? "· "+it.lugar : ""} (${it.hora})`;
+      const timer = setTimeout(()=>{
+        new Notification(titulo, { body: cuerpo });
+      }, ms);
+      notifTimers.push(timer);
+    }
+  }
+
+  // ====== UI refs ======
+  const selDia = document.getElementById("dia");
+  const listaDia = document.getElementById("listaDia");
+  const vacioDia = document.getElementById("vacioDia");
+  const btnHoy = document.getElementById("btnHoy");
+  const btnPend = document.getElementById("btnPendientes");
+  const btnOscuro = document.getElementById("btnOscuro");
+  const btnNotif = document.getElementById("btnNotif");
+
+  const tabDia = document.getElementById("tabDia");
+  const tabSemana = document.getElementById("tabSemana");
+  const viewDia = document.getElementById("viewDia");
+  const viewSemana = document.getElementById("viewSemana");
+  const contSemana = document.getElementById("semana");
+
+  // ====== Render (banderas ahora/próxima + pendientes) ======
+  function computeFlags(items){
+    const now = ahoraMin();
+    let nowIndex = -1;
+    for(let i=0;i<items.length;i++){
+      const r = parseRango(items[i].hora);
+      if(!r) continue;
+      if(now >= r.ini && now < r.fin){ nowIndex = i; break; }
+    }
+    let nextIndex = -1;
+    if(nowIndex !== -1){
+      nextIndex = nowIndex + 1 < items.length ? nowIndex + 1 : -1;
+    }else{
+      // próxima es la primera que no terminó
+      for(let i=0;i<items.length;i++){
+        const r = parseRango(items[i].hora);
+        if(!r) continue;
+        if(now < r.ini){ nextIndex = i; break; }
+      }
+    }
+    return { nowIndex, nextIndex };
+  }
+
+  function filtrarPendientes(items){
+    if(!soloPendientes) return items;
+    const now = ahoraMin();
+    return items.filter(it=>{
+      const r = parseRango(it.hora);
+      if(!r) return true; // COORD u otros sin parse claro
+      return now < r.fin; // todavía no terminó
+    });
+  }
+
+  function renderItem(li, dia, it, flag){
+    const top = document.createElement("div");
+    top.className = "topline";
+
+    const hora = document.createElement("div");
+    hora.className = "hora";
+    hora.textContent = it.hora;
+
+    const right = document.createElement("div");
+    right.style.display="flex";
+    right.style.alignItems="center";
+    right.style.gap="8px";
+
+    const tag = document.createElement("div");
+    tag.className = badgeClass(it.lugar, it.grupo);
+    tag.textContent = it.grupo==="COORD" ? "COORD" : (it.lugar ? it.lugar : "—");
+
+    right.appendChild(tag);
+
+    if(flag==="now"){
+      const f = document.createElement("div");
+      f.className = "flag now";
+      f.textContent = "AHORA";
+      right.appendChild(f);
+      li.style.background = "var(--now)";
+      li.style.borderColor = "var(--now-border)";
+    } else if(flag==="next"){
+      const f = document.createElement("div");
+      f.className = "flag next";
+      f.textContent = "PRÓXIMA";
+      right.appendChild(f);
+      li.style.background = "var(--next)";
+      li.style.borderColor = "var(--next-border)";
+    }
+
+    top.appendChild(hora);
+    top.appendChild(right);
+
+    const sub = document.createElement("div");
+    sub.className = "sub";
+    sub.textContent = it.grupo==="COORD" ? "Coordinación" : `${it.grupo}${it.lugar ? " · "+it.lugar : ""}`;
+
+    // Notas
+    const key = classKey(dia,it);
+    const note = getNote(key);
+
+    const noteBox = document.createElement("div");
+    noteBox.className = "noteBox";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Nota / recordatorio (ej: llevar cables, imprimir guía...)";
+    input.value = note;
+
+    const btnSave = document.createElement("button");
+    btnSave.className = "noteBtn";
+    btnSave.type = "button";
+    btnSave.textContent = "Guardar nota";
+
+    const btnClear = document.createElement("button");
+    btnClear.className = "noteBtn";
+    btnClear.type = "button";
+    btnClear.textContent = "Borrar";
+
+    const noteText = document.createElement("div");
+    noteText.className = "noteText";
+    noteText.textContent = note ? `📝 ${note}` : "";
+
+    btnSave.addEventListener("click", ()=>{
+      const val = input.value.trim();
+      setNote(key, val);
+      noteText.textContent = val ? `📝 ${val}` : "";
+    });
+    btnClear.addEventListener("click", ()=>{
+      input.value = "";
+      clearNote(key);
+      noteText.textContent = "";
+    });
+
+    noteBox.appendChild(input);
+    noteBox.appendChild(btnSave);
+    noteBox.appendChild(btnClear);
+
+    li.appendChild(top);
+    li.appendChild(sub);
+    li.appendChild(noteBox);
+    li.appendChild(noteText);
+  }
+
+  function renderDia(dia){
+    const raw = ordenar(HORARIOS[dia] ?? []);
+    const items = filtrarPendientes(raw);
+
+    listaDia.innerHTML = "";
+    vacioDia.style.display = items.length ? "none" : "block";
+
+    const flags = computeFlags(raw); // banderas según lista completa
+    for(let i=0;i<items.length;i++){
+      // traducir índice del filtrado a índice del raw para banderas
+      const it = items[i];
+      const rawIndex = raw.findIndex(x => x===it);
+      let flag = null;
+      if(rawIndex === flags.nowIndex) flag = "now";
+      else if(rawIndex === flags.nextIndex) flag = "next";
+
+      const li = document.createElement("li");
+      renderItem(li, dia, it, flag);
+      listaDia.appendChild(li);
+    }
+
+    // Notificaciones (si corresponde)
+    scheduleNotificationsForDay(dia);
+
+    // estado
+    const perm = ("Notification" in window) ? Notification.permission : "no soportado";
+    status.textContent = `Vista: ${localStorage.getItem("vista") || "día"} · Pendientes: ${soloPendientes ? "sí" : "no"} · Avisos: ${perm}`;
+  }
+
+  function renderSemana(){
+    contSemana.innerHTML = "";
+    for(const d of ORDEN_DIAS){
+      const title = document.createElement("div");
+      title.className = "dayTitle";
+      title.textContent = d;
+      contSemana.appendChild(title);
+
+      const raw = ordenar(HORARIOS[d] ?? []);
+      const items = filtrarPendientes(raw);
+
+      if(!items.length){
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Sin clases";
+        contSemana.appendChild(empty);
+        continue;
+      }
+
+      const ul = document.createElement("ul");
+      const flags = computeFlags(raw);
+
+      for(const it of items){
+        const rawIndex = raw.findIndex(x => x===it);
+        let flag = null;
+        if(d === selDia.value){ // resaltar solo en el día seleccionado
+          if(rawIndex === flags.nowIndex) flag = "now";
+          else if(rawIndex === flags.nextIndex) flag = "next";
+        }
+        const li = document.createElement("li");
+        renderItem(li, d, it, flag);
+        ul.appendChild(li);
+      }
+      contSemana.appendChild(ul);
+    }
+    const perm = ("Notification" in window) ? Notification.permission : "no soportado";
+    status.textContent = `Vista: semana · Pendientes: ${soloPendientes ? "sí" : "no"} · Avisos: ${perm}`;
+  }
+
+  // ====== Tabs ======
+  function setVista(v){
+    const isDia = v==="dia";
+    viewDia.style.display = isDia ? "block" : "none";
+    viewSemana.style.display = isDia ? "none" : "block";
+    tabDia.classList.toggle("active", isDia);
+    tabSemana.classList.toggle("active", !isDia);
+    localStorage.setItem("vista", v);
+
+    if(isDia) renderDia(selDia.value);
+    else renderSemana();
+  }
+
+  tabDia.addEventListener("click", ()=> setVista("dia"));
+  tabSemana.addEventListener("click", ()=> setVista("semana"));
+
+  // ====== Eventos ======
+  selDia.addEventListener("change", ()=>{
+    localStorage.setItem("diaElegido", selDia.value);
+    const vista = localStorage.getItem("vista") || "dia";
+    setVista(vista);
+  });
+
+  btnHoy.addEventListener("click", ()=>{
+    const hoy = hoyNombre();
+    // si es fin de semana, cae en lunes por comodidad
+    selDia.value = HORARIOS[hoy] ? hoy : "Lunes";
+    localStorage.setItem("diaElegido", selDia.value);
+    setVista("dia");
+  });
+
+  btnPend.addEventListener("click", ()=>{
+    soloPendientes = !soloPendientes;
+    btnPend.textContent = soloPendientes ? "Ver todo" : "Solo pendientes";
+    const vista = localStorage.getItem("vista") || "dia";
+    setVista(vista);
+  });
+
+  btnOscuro.addEventListener("click", ()=>{
+    document.body.classList.toggle("dark");
+    localStorage.setItem("dark", document.body.classList.contains("dark") ? "1" : "0");
+  });
+
+  btnNotif.addEventListener("click", requestNotify);
+
+  // ====== Init ======
+  // Modo oscuro por preferencia guardada o del sistema
+  const darkSaved = localStorage.getItem("dark");
+  if(darkSaved === "1") document.body.classList.add("dark");
+  else if(darkSaved === null && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches){
+    document.body.classList.add("dark");
+  }
+
+  // Día: auto al abrir (o el último guardado)
+  const guardadoDia = localStorage.getItem("diaElegido");
+  if(guardadoDia && HORARIOS[guardadoDia]) selDia.value = guardadoDia;
+  else {
+    const hoy = hoyNombre();
+    selDia.value = HORARIOS[hoy] ? hoy : "Lunes";
+  }
+
+  // Vista guardada
+  const vista = localStorage.getItem("vista") || "dia";
+  setVista(vista);
+
+  // Re-render cada minuto para actualizar “AHORA/PRÓXIMA”
+  setInterval(()=>{
+    const v = localStorage.getItem("vista") || "dia";
+    if(v==="dia") renderDia(selDia.value);
+    else renderSemana();
+  }, 60*1000);
+
+</script>
+</body>
+</html>
